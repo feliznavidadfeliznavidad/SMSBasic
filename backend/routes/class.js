@@ -186,4 +186,45 @@ router.delete('/:classId',
     }
 });
 
+// Delete student from class
+router.delete('/:classId/students/:studentId', 
+  verifyToken, 
+  checkRole(['admin', 'lecturer']), 
+  async (req, res) => {
+    try {
+      const { classId, studentId } = req.params;
+      
+      // Check if class exists
+      const classRef = admin.firestore().collection('Classes').doc(classId);
+      const classDoc = await classRef.get();
+
+      if (!classDoc.exists) {
+        return res.status(404).json({ message: 'Class not found' });
+      }
+
+      // Check permissions for lecturer
+      if (req.user.role === 'lecturer' && classDoc.data().lecturerId !== req.user.uid) {
+        return res.status(403).json({ message: 'Permission denied' });
+      }
+
+      // Check if student exists in class
+      const studentRef = classRef.collection('Students').doc(studentId);
+      const studentDoc = await studentRef.get();
+
+      if (!studentDoc.exists) {
+        return res.status(404).json({ message: 'Student not found in this class' });
+      }
+
+      // Delete student and update count
+      await studentRef.delete();
+      await classRef.update({
+        studentsCount: admin.firestore.FieldValue.increment(-1)
+      });
+
+      res.status(200).json({ message: 'Student removed from class successfully' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;
