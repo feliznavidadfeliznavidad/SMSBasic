@@ -189,6 +189,31 @@ router.get('/lecturers',
     }
   }
 );
+// Thêm route mới để lấy danh sách students
+router.get('/students', 
+  verifyToken, 
+  checkRole(['admin']), // Chỉ admin được phép truy cập
+  async (req, res) => {
+    try {
+      const usersRef = admin.firestore().collection('Users').where('role', '==', 'student');
+      const snapshot = await usersRef.get();
+
+      const students = [];
+      snapshot.forEach(doc => {
+        const userData = doc.data();
+        students.push({
+          id: doc.id,
+          name: userData.name || 'Unknown'
+        });
+      });
+
+      res.status(200).json(students);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
 
 
 module.exports = router;
