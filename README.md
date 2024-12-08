@@ -1,64 +1,62 @@
+
 # Student Management System (SMS)
 
-Hệ thống **Student Management System (SMS)** là một ứng dụng quản lý sinh viên, bao gồm hai phần chính: **Frontend** và **Backend**. 
+## Mô tả Dự án
 
-## Mô tả dự án
-- **Frontend**: Được phát triển bằng React.js và Bootstrap.
-- **Backend**: Được phát triển bằng Node.js, sử dụng Firebase để quản lý dữ liệu.
+**Student Management System (SMS)** là một hệ thống quản lý sinh viên với hai thành phần chính: **Frontend** và **Backend**.
 
-## Yêu cầu cài đặt
-- **Node.js**: Phiên bản mới nhất.
-- **npm** (hoặc yarn): Công cụ quản lý package.
+- **Frontend**: Xây dựng bằng **React.js** và sử dụng **Bootstrap** để thiết kế giao diện.
+- **Backend**: Xây dựng bằng **Node.js** và tích hợp với **Firebase** để quản lý dữ liệu.
 
-## Hướng dẫn cài đặt và chạy dự án
+## Hướng dẫn Cài đặt và Chạy Dự án
 
-### 1. Clone dự án
-```bash
-git clone <URL của repository>
-cd <thư mục của dự án>
+### 1. Cài đặt các thành phần
+1. **Clone repository về máy**:
+   ```bash
+   git clone https://github.com/feliznavidadfeliznavidad/SMSBasic.git
+   ```
 
-2. Cài đặt dependencies
+2. **Cài đặt Frontend**:
+   ```bash
+   cd project/final
+   npm install
+   ```
 
-Backend
+3. **Cài đặt Backend**:
+   ```bash
+   cd backend
+   npm install
+   ```
 
-cd backend
-npm install
+### 2. Chạy dự án
 
-Frontend
+1. **Copy 2 file có chứa Key vào thư mục backend**:
 
-cd project/final
-npm install
 
-3. Chạy dự án
+### 3. Chạy dự án
 
-Bước 1: Chạy Backend
+1. **Khởi động Backend**:
+   - Chuyển vào thư mục `backend` và chạy lệnh:
+     ```bash
+     npm node server.js
+     ```
+   - Đảm bảo backend đã khởi động trước khi chuyển sang frontend.
 
-Trước tiên, bạn cần chạy server Backend:
+2. **Khởi động Frontend**:
+   - Chuyển vào thư mục `project/final` và chạy lệnh:
+     ```bash
+     npm start
+     ```
 
-cd backend
-node server.js
+3. Truy cập ứng dụng tại: `http://localhost:3000`
 
-Bước 2: Chạy Frontend
+## Công nghệ Sử dụng
 
-Sau khi Backend đã chạy, mở một terminal mới và thực hiện:
+| Thành phần       | Công nghệ                |
+|------------------|--------------------------|
+| **Frontend**     | React.js, Bootstrap      |
+| **Backend**      | Node.js, Firebase        |
 
-cd project/final
-npm start
-
-4. Truy cập ứng dụng
-
-	•	Mở trình duyệt và truy cập: http://localhost:3000 để sử dụng hệ thống.
-
-Công nghệ sử dụng
-
-	•	Frontend:
-	•	React.js
-	•	Bootstrap
-	•	Backend:
-	•	Node.js
-	•	Firebase
-
-Ghi chú
-
-	•	Backend cần được khởi động trước để đảm bảo Frontend có thể kết nối và hoạt động chính xác.
-	•	Hãy đảm bảo Firebase đã được cấu hình trong file .env hoặc tệp cấu hình tương ứng trong thư mục backend.
+## Lưu ý
+- Đảm bảo cài đặt Node.js phiên bản mới nhất để tránh lỗi trong quá trình cài đặt và chạy dự án.
+- Firebase cần được cấu hình trước khi khởi chạy backend. Chỉnh sửa file cấu hình Firebase nếu cần thiết.
