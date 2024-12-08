@@ -10,14 +10,10 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const classRoutes = require('./routes/class');
-const attendanceRoutes = require('./routes/attendance');
-const gradeRoutes = require('./routes/grade');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/classes', classRoutes);
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/grades', gradeRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -3,7 +3,6 @@ const router = express.Router();
 const { admin } = require('../config/firebaseAdmin');
 const { verifyToken, checkRole } = require('../middleware/auth');
 
-// Lấy danh sách người dùng (Admin only)
 router.get('/', 
   verifyToken, 
   checkRole(['admin']), 

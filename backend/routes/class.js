@@ -16,12 +16,8 @@ router.post('/',
         classId: classRef.id,
         className,
         lecturerId: req.user.uid,
-        students: [],
-        subject,
-        schedule,
-        semester,
-        year,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
+        lecturerName: req.user.name,
+        students: []
       });
       
       res.status(201).json({ 
@@ -87,6 +83,50 @@ router.put('/:classId',
       res.status(500).json({ message: error.message });
     }
 });
+
+// Lấy danh sách sinh viên theo classId
+router.get('/:classId/students', verifyToken, async (req, res) => {
+  try {
+    const { classId } = req.params;
+
+    // Lấy thông tin lớp học từ Firestore
+    const classDoc = await admin.firestore().collection('Classes').doc(classId).get();
+
+    if (!classDoc.exists) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    const classData = classDoc.data();
+
+    // Lấy danh sách sinh viên từ mảng `students` trong lớp
+    const studentIds = classData.students || [];
+
+    if (studentIds.length === 0) {
+      return res.status(200).json({ students: [] }); // Lớp chưa có sinh viên
+    }
+
+    // Lấy thông tin chi tiết của từng sinh viên
+    const studentSnapshots = await admin
+      .firestore()
+      .collection('Students')
+      .where('uid', 'in', studentIds)
+      .get();
+
+    const students = [];
+    studentSnapshots.forEach((doc) => {
+      students.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.status(200).json({ students });
+  } catch (error) {
+    // Xử lý lỗi Firestore hoặc logic
+    if (error.code === 400) {
+      return res.status(400).json({ message: 'Invalid student IDs provided' });
+    }
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 // Xóa lớp học (Admin only)
 router.delete('/:classId', 
