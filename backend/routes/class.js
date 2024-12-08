@@ -3,13 +3,12 @@ const router = express.Router();
 const { admin } = require('../config/firebaseAdmin');
 const { verifyToken, checkRole } = require('../middleware/auth');
 
-// Tạo lớp học mới (Admin & Lecturer only)
 router.post('/', 
   verifyToken, 
   checkRole(['admin', 'lecturer']), 
   async (req, res) => {
     try {
-      const { className, subject, schedule, semester, year } = req.body;
+      const { className } = req.body;
       
       const classRef = admin.firestore().collection('Classes').doc();
       await classRef.set({
@@ -17,7 +16,7 @@ router.post('/',
         className,
         lecturerId: req.user.uid,
         lecturerName: req.user.name,
-        students: []
+        studentsCount: 0
       });
       
       res.status(201).json({ 
@@ -128,45 +127,83 @@ router.get('/:classId/students', verifyToken, async (req, res) => {
 });
 
 
-// Xóa lớp học (Admin only)
-router.delete('/:classId', 
-  verifyToken, 
-  checkRole(['admin']), 
-  async (req, res) => {
-    try {
-      const { classId } = req.params;
-      
-      await admin.firestore().collection('Classes').doc(classId).delete();
-      
-      // Xóa các dữ liệu liên quan (điểm danh, điểm số)
-      const batch = admin.firestore().batch();
-      
-      // Xóa điểm danh
-      const attendanceDocs = await admin.firestore()
-        .collection('Attendance')
-        .where('classId', '==', classId)
-        .get();
-        
-      attendanceDocs.forEach(doc => {
-        batch.delete(doc.ref);
-      });
-      
-      // Xóa điểm số
-      const gradeDocs = await admin.firestore()
-        .collection('Grades')
-        .where('classId', '==', classId)
-        .get();
-        
-      gradeDocs.forEach(doc => {
-        batch.delete(doc.ref);
-      });
-      
-      await batch.commit();
-      
-      res.status(200).json({ message: 'Class and related data deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+router.post('/:classId/students', verifyToken, checkRole(['admin', 'lecturer']), async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const { studentId, studentName } = req.body;
+
+    // Kiểm tra xem lớp học có tồn tại không
+    const classRef = admin.firestore().collection('Classes').doc(classId);
+    const classDoc = await classRef.get();
+    if (!classDoc.exists) {
+      return res.status(404).json({ message: 'Class not found' });
     }
+
+    // Thêm sinh viên vào subcollection
+    const studentRef = classRef.collection('Students').doc(studentId);
+    await studentRef.set({
+      studentId,
+      studentName,
+    });
+
+    // Cập nhật số lượng sinh viên
+    await classRef.update({
+      studentsCount: admin.firestore.FieldValue.increment(1),
+    });
+
+    res.status(201).json({ message: 'Student added to class successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+router.get('/:classId/students', verifyToken, async (req, res) => {
+  try {
+    const { classId } = req.params;
+
+    // Kiểm tra xem lớp học có tồn tại không
+    const classRef = admin.firestore().collection('Classes').doc(classId);
+    const classDoc = await classRef.get();
+    if (!classDoc.exists) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    // Lấy danh sách sinh viên từ subcollection
+    const studentSnapshots = await classRef.collection('Students').get();
+    const students = [];
+    studentSnapshots.forEach((doc) => {
+      students.push(doc.data());
+    });
+
+    res.status(200).json({ students });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Xóa lớp học (Admin only)
+router.delete('/:classId', verifyToken, checkRole(['admin']), async (req, res) => {
+  try {
+    const { classId } = req.params;
+
+    const classRef = admin.firestore().collection('Classes').doc(classId);
+
+    // Xóa tất cả sinh viên trong subcollection
+    const studentsSnapshot = await classRef.collection('Students').get();
+    const batch = admin.firestore().batch();
+    studentsSnapshot.forEach((doc) => batch.delete(doc.ref));
+
+    // Xóa lớp học
+    batch.delete(classRef);
+
+    // Commit các thay đổi
+    await batch.commit();
+
+    res.status(200).json({ message: 'Class and related students deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 module.exports = router;

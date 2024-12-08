@@ -165,4 +165,30 @@ router.post('/class/:classId/students',
     }
 });
 
+// Thêm route mới để lấy danh sách lecturers
+router.get('/lecturers', 
+  verifyToken, 
+  checkRole(['admin']), // Chỉ admin được phép truy cập
+  async (req, res) => {
+    try {
+      const usersRef = admin.firestore().collection('Users').where('role', '==', 'lecturer');
+      const snapshot = await usersRef.get();
+
+      const lecturers = [];
+      snapshot.forEach(doc => {
+        const userData = doc.data();
+        lecturers.push({
+          id: doc.id,
+          name: userData.name || 'Unknown'
+        });
+      });
+
+      res.status(200).json(lecturers);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+
 module.exports = router;
