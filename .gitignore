@@ -1,0 +1,9 @@
+/backend/node_modules
+/backend/serviceAccountKey.json
+/backend/login-cde1c-firebase-adminsdk-ffils-c881020eb1.json
+
+
+/project/final/node_modules
+
+Thumbs.db
+*.DS_Store
