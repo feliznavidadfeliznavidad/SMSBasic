@@ -35,7 +35,7 @@ export const Sidebar = () => {
           // { title: "Dashboard", path: "/", icon: <FaHome size={20} /> },
           {
             title: "My Classes",
-            path: "/classes",
+            path: "/classes_lecturer",
             icon: <FaChalkboardTeacher size={20} />,
           },
         ];

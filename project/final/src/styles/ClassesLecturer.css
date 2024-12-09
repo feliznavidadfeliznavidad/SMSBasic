@@ -1,0 +1,110 @@
+/* Main Container Layout */
+.class-management-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* Sidebar Styling */
+.sidebar-container {
+  width: 250px;
+  background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+  padding: 20px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Content Area */
+.CM-main-content {
+  flex: 1;
+  padding: 30px;
+}
+
+/* Header Styling */
+.header-container {
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #eaeaea;
+}
+
+.header-container h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Class List Container */
+.class-list-container {
+  padding: 20px;
+}
+
+/* Class List Grid */
+.class-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  padding: 20px 0;
+}
+
+/* Class Card Styling */
+.class-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.class-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.class-card h2 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0 0 15px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.class-card p {
+  margin: 10px 0;
+  color: #5a6c7d;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.class-card strong {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* No Classes Message */
+.no-classes-text {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 1.2rem;
+  padding: 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .class-management-container {
+    flex-direction: column;
+  }
+
+  .sidebar-container {
+    width: 100%;
+    height: auto;
+  }
+
+  .class-list {
+    grid-template-columns: 1fr;
+  }
+
+  .header-container h1 {
+    font-size: 2rem;
+  }
+}

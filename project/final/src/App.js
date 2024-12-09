@@ -11,7 +11,8 @@ import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import ClassManagement from "./components/ClassManagement";
 import UserManagement from "./components/UserManagement";
-import Unauthorized from './components/Unauthorized';
+import Unauthorized from "./components/Unauthorized";
+import ClassesLecture from "./components/ClassesLecture";
 
 function App() {
   return (
@@ -46,13 +47,16 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
-            path="/unauthorized" 
+            path="/classes_lecturer"
             element={
-              <Unauthorized />
-            } 
+              <ProtectedRoute>
+                <ClassesLecture />
+              </ProtectedRoute>
+            }
           />
+
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

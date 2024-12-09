@@ -12,7 +12,9 @@ export const AuthProvider = ({ children }) => {
 
   axios.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("token");
+      // Ưu tiên lấy token từ sessionStorage trước
+      const token =
+        sessionStorage.getItem("token") || localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -23,12 +25,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem("token");
+      // Kiểm tra token trong cả sessionStorage và localStorage
+      const sessionToken = sessionStorage.getItem("token");
+      const localToken = localStorage.getItem("token");
+      const token = sessionToken || localToken;
+
       if (token) {
         try {
           const response = await axios.get("/api/auth/profile");
           setUser(response.data.user);
         } catch (error) {
+          // Xóa token khỏi cả hai storage khi hết hạn
+          sessionStorage.removeItem("token");
           localStorage.removeItem("token");
           setError("Session expired. Please login again.");
         }
@@ -43,8 +51,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post("/api/auth/login", { email, password });
       const { token, user } = response.data;
+      // Lưu token vào cả hai storage
       localStorage.setItem("token", token);
-      sessionStorage.setItem("jwt", token);
+      sessionStorage.setItem("token", token);
       setUser(user);
       setError(null);
       return user.role;
@@ -58,7 +67,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post("/api/auth/register", userData);
       const { token, user } = response.data;
+      // Lưu token vào cả hai storage
       localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
       setUser(user);
       setError(null);
       return true;
@@ -72,7 +83,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post("/api/auth/google-login", { idToken });
       const { token, user } = response.data;
+      // Lưu token vào cả hai storage
       localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
       setUser(user);
       setError(null);
       return user.role;
@@ -88,7 +101,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
+      // Xóa token khỏi cả hai storage
       localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
       setUser(null);
       setError(null);
     }

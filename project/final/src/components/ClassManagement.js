@@ -40,19 +40,21 @@ const ClassManagement = () => {
       });
   };
 
-  const handleSubmit = (data) => {
-    createClass(data);
-    console.log("Data submitted:", data);
-  };
+  // const handleSubmit = (data) => {
+  //   createClass(data);
+  //   console.log("Data submitted:", data);
+  // };
 
-  const createClass = (data) => {
-    axios
-      .post("api/classes", data, {
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      })
+  // const createClass = (postData) => {
+  //   console.log("Data submitted from create Class:", postData);
 
-      .catch((err) => console.log(err.message));
-  };
+  //   axios
+  //     .post("api/classes", postData, {
+  //       headers: { Authorization: `Bearer ${jwtToken}` },
+  //     })
+  //     .then((response) => console.log("API Response:", response.data))
+  //     .catch((err) => console.log("Error:", err.message));
+  // };
 
   const handleDelete = (classID) => {
     axios
@@ -127,7 +129,7 @@ const ClassManagement = () => {
           onClose={() => {
             setIsAddClassModal(false);
           }}
-          onSubmit={handleSubmit}
+          // onSubmit={handleSubmit}
         />
       </div>
     </div>
