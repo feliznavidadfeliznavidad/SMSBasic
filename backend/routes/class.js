@@ -7,10 +7,39 @@ const { verifyToken, checkRole } = require("../middleware/auth");
  * @swagger
  * components:
  *   schemas:
+ *     Student:
+ *       type: object
+ *       required:
+ *         - studentId
+ *         - studentName
+ *       properties:
+ *         studentId:
+ *           type: string
+ *           description: Student's ID
+ *         studentName:
+ *           type: string
+ *           description: Student's name
+ */
+
+
+const validateStudent = (req, res, next) => {
+  const { studentId, studentName } = req.body;
+  if (!studentId || !studentName || studentName.trim().length < 2) {
+    return res.status(400).json({ message: "Invalid student information" });
+  }
+  next();
+};
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
  *     Class:
  *       type: object
  *       required:
  *         - className
+ *         - lecturerId
+ *         - lecturerName
  *       properties:
  *         classId:
  *           type: string
@@ -27,37 +56,7 @@ const { verifyToken, checkRole } = require("../middleware/auth");
  *         studentsCount:
  *           type: number
  *           description: Number of students in the class
- *     Student:
- *       type: object
- *       required:
- *         - studentId
- *         - studentName
- *       properties:
- *         studentId:
- *           type: string
- *           description: Student's ID
- *         studentName:
- *           type: string
- *           description: Student's name
  */
-
-const validateClass = (req, res, next) => {
-  const { className } = req.body;
-  if (!className || className.trim().length < 3) {
-    return res
-      .status(400)
-      .json({ message: "Class name must be at least 3 characters long" });
-  }
-  next();
-};
-
-const validateStudent = (req, res, next) => {
-  const { studentId, studentName } = req.body;
-  if (!studentId || !studentName || studentName.trim().length < 2) {
-    return res.status(400).json({ message: "Invalid student information" });
-  }
-  next();
-};
 
 /**
  * @swagger
@@ -75,10 +74,18 @@ const validateStudent = (req, res, next) => {
  *             type: object
  *             required:
  *               - className
+ *               - lecturerId
+ *               - lecturerName
  *             properties:
  *               className:
  *                 type: string
  *                 minimum: 3
+ *               lecturerId:
+ *                 type: string
+ *                 description: ID of the lecturer
+ *               lecturerName:
+ *                 type: string
+ *                 description: Name of the lecturer
  *     responses:
  *       201:
  *         description: Class created successfully
@@ -100,24 +107,54 @@ const validateStudent = (req, res, next) => {
  *       500:
  *         description: Server error
  */
+
+const validateClass = (req, res, next) => {
+  const { className, lecturerId, lecturerName } = req.body;
+  
+  if (!className || className.trim().length < 3) {
+    return res
+      .status(400)
+      .json({ message: "Class name must be at least 3 characters long" });
+  }
+  
+  if (!lecturerId || !lecturerName || lecturerName.trim().length < 2) {
+    return res
+      .status(400)
+      .json({ message: "Valid lecturer ID and name are required" });
+  }
+  
+  next();
+};
+
 router.post(
   "/",
   verifyToken,
-  checkRole(["admin", "lecturer"]),
+  checkRole(["admin"]),
   validateClass,
   async (req, res) => {
     try {
-      const { className } = req.body;
+      const { className, lecturerId, lecturerName } = req.body;
+
+      // Verify if the lecturer exists in the system
+      const lecturerRef = admin.firestore().collection("Users").doc(lecturerId);
+      const lecturerDoc = await lecturerRef.get();
+
+      if (!lecturerDoc.exists || lecturerDoc.data().role !== 'lecturer') {
+        return res.status(400).json({ 
+          message: "Invalid lecturer ID or user is not a lecturer" 
+        });
+      }
 
       const classRef = admin.firestore().collection("Classes").doc();
       await classRef.set({
         classId: classRef.id,
         className,
-        lecturerId: req.user.uid,
-        lecturerName: req.user.name,
+        lecturerId,
+        lecturerName,
         studentsCount: 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdBy: req.user.uid,  // Track who created the class
       });
 
       res.status(201).json({
@@ -125,7 +162,11 @@ router.post(
         classId: classRef.id,
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      console.error("Error creating class:", error);
+      res.status(500).json({ 
+        message: "Failed to create class",
+        error: error.message 
+      });
     }
   }
 );
@@ -486,6 +527,114 @@ router.delete(
       res
         .status(200)
         .json({ message: "Student removed from class successfully" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/classes/teaching:
+ *   get:
+ *     summary: Get classes where user is lecturer
+ *     tags: [Classes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of classes where user is lecturer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Class'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Lecturer only 
+ *       500:
+ *         description: Server error
+ */
+router.get(
+  "/teaching",
+  verifyToken,
+  checkRole(["lecturer"]), 
+  async (req, res) => {
+    try {
+      const classesRef = admin
+        .firestore()
+        .collection("Classes")
+        .where("lecturerId", "==", req.user.uid);
+
+      const snapshot = await classesRef.get();
+      const classes = [];
+
+      snapshot.forEach((doc) => {
+        classes.push({ id: doc.id, ...doc.data() });
+      });
+
+      res.status(200).json(classes);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+/**
+ * @swagger
+ * /api/classes/enrolled:
+ *   get:
+ *     summary: Get classes where user is enrolled as student
+ *     tags: [Classes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of enrolled classes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Class'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Student only
+ *       500:
+ *         description: Server error
+ */
+router.get(
+  "/enrolled", 
+  verifyToken,
+  checkRole(["student"]),
+  async (req, res) => {
+    try {
+      const studentId = req.user.uid;
+      const enrolledClasses = [];
+
+      const classesRef = admin.firestore().collection("Classes");
+      const classesSnapshot = await classesRef.get();
+
+      for (const classDoc of classesSnapshot.docs) {
+        const studentRef = classDoc
+          .ref
+          .collection("Students")
+          .doc(studentId);
+        
+        const studentDoc = await studentRef.get();
+        
+        if (studentDoc.exists) {
+          enrolledClasses.push({
+            id: classDoc.id,
+            ...classDoc.data()
+          });
+        }
+      }
+
+      res.status(200).json(enrolledClasses);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
