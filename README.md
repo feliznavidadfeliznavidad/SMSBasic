@@ -1,4 +1,3 @@
-
 # Student Management System (SMS)
 
 ## Mô tả Dự án
@@ -11,14 +10,13 @@
 ## Hướng dẫn Cài đặt và Chạy Dự án
 
 ### 1. Cài đặt các thành phần
+
 1. **Clone repository về máy**:
-   ```bash
-   git clone https://github.com/feliznavidadfeliznavidad/SMSBasic.git
-   ```
 
 2. **Cài đặt Frontend**:
+
    ```bash
-   cd project/final
+   cd frontend
    npm install
    ```
 
@@ -32,18 +30,19 @@
 
 1. **Copy 2 file có chứa Key vào thư mục backend**:
 
-
 ### 3. Chạy dự án
 
 1. **Khởi động Backend**:
+
    - Chuyển vào thư mục `backend` và chạy lệnh:
      ```bash
-   node server.js
+      node server.js
      ```
    - Đảm bảo backend đã khởi động trước khi chuyển sang frontend.
 
 2. **Khởi động Frontend**:
-   - Chuyển vào thư mục `project/final` và chạy lệnh:
+
+   - Chuyển vào thư mục `frontend` và chạy lệnh:
      ```bash
      npm start
      ```
@@ -52,11 +51,12 @@
 
 ## Công nghệ Sử dụng
 
-| Thành phần       | Công nghệ                |
-|------------------|--------------------------|
-| **Frontend**     | React.js, Bootstrap      |
-| **Backend**      | Node.js, Firebase        |
+| Thành phần   | Công nghệ           |
+| ------------ | ------------------- |
+| **Frontend** | React.js, Bootstrap |
+| **Backend**  | Node.js, Firebase   |
 
 ## Lưu ý
+
 - Đảm bảo cài đặt Node.js phiên bản mới nhất để tránh lỗi trong quá trình cài đặt và chạy dự án.
 - Firebase cần được cấu hình trước khi khởi chạy backend. Chỉnh sửa file cấu hình Firebase nếu cần thiết.
