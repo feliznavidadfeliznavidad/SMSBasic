@@ -32,17 +32,15 @@ export const Sidebar = () => {
         ];
       case "lecturer":
         return [
-          { title: "Dashboard", path: "/", icon: <FaHome size={20} /> },
+          // { title: "Dashboard", path: "/", icon: <FaHome size={20} /> },
           {
             title: "My Classes",
-            path: "/my-classes",
+            path: "/classes",
             icon: <FaChalkboardTeacher size={20} />,
           },
         ];
       case "student":
         return [
-          { title: "Dashboard", path: "/", icon: <FaHome size={20} /> },
-          { title: "Profile", path: "/profile", icon: <FaUserCog size={20} /> },
           {
             title: "Classes",
             path: "/classes",
