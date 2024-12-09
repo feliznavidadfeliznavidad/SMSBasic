@@ -62,37 +62,25 @@ const AddClassModal = ({ isOpen, onClose }) => {
         students: [],
       };
 
-      // const response = await axios
-      //   .post("api/classes", classData, {
-      //     headers: { Authorization: `Bearer ${jwtToken}` },
-      //   })
-      //   .then((res) => {
-      //     console.log("classData from then: ", classData);
-      //   });
       fetch("http://localhost:8888/api/classes", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Ensure the server knows the data is JSON
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Pass the JWT token for authorization
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
-        body: JSON.stringify(classData), // Convert the data to a JSON string
+        body: JSON.stringify(classData), 
       })
         .then((res) => {
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
           }
-          return res.json(); // Parse the response JSON
+          return res.json(); 
         })
         .then((data) => {
-          console.log("Response from server:", data); // Log the server response
-          console.log("Data sent:", classData); // Log the data you sent
+          console.log("Response from server:", data);
+          console.log("Data sent:", classData); 
         })
         .catch((err) => console.error("Error:", err.message));
-
-      // console.log("classData: ", classData);
-      // console.log("Class created successfully:", response.data);
-
-      // Reset form
       setSubject("");
       setLecturerName("");
       setError("");

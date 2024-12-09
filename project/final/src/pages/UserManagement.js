@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
-import { Table, Button, Modal, Form, Alert, Spinner } from "react-bootstrap";
+import { Table, Button, Modal, Form, Alert, Spinner, Card } from "react-bootstrap";
 
 import { Sidebar } from "../components/Sidebar";
 import { Header } from "../components/Header";
@@ -28,6 +28,7 @@ const UserManagement = () => {
 
   const fetchUsers = () => {
     setLoading(true);
+    setError(null); // Reset error before fetching
     axios
       .get("/api/users", {
         headers: { Authorization: `Bearer ${jwtToken}` },
@@ -83,63 +84,94 @@ const UserManagement = () => {
   return (
     <div className="d-flex">
       <Sidebar />
-      <div className="main-content" style={{ flex: 1 }}>
+      <div className="main-content" style={{ flex: 1, background: "#f8f9fa" }}>
         <Header />
         <div className="container py-4">
-          <h2 className="mb-4">User Management</h2>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <div className="mb-3 text-end">
-            <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-              + Create New User
-            </Button>
-          </div>
-          {loading ? (
-            <div className="text-center py-4">
-              <Spinner animation="border" variant="primary" />
-            </div>
-          ) : (
-            <Table responsive striped bordered hover className="align-middle">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, index) => (
-                  <tr key={user.id}>
-                    <td>{index + 1}</td>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
-                    <td>{user.role}</td>
-                    <td>
-                      <div className="btn-group" role="group">
-                        <Button
-                          variant="warning"
-                          size="sm"
-                          onClick={() => openModal(user)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDelete(user.uid)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+          <h2 className="text-center mb-4">User Management</h2>
+          {error && (
+            <Alert variant="danger" className="text-center">
+              {error}
+            </Alert>
           )}
 
-          {/* Modal for Editing User */}
+          <Card className="mb-4 shadow-sm">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="mb-0">Manage Users</h5>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  + Create New User
+                </Button>
+              </div>
+              {loading ? (
+                <div className="text-center py-4">
+                  <Spinner animation="border" variant="primary" />
+                </div>
+              ) : (
+                <Table
+                  responsive
+                  striped
+                  bordered
+                  hover
+                  className="align-middle"
+                >
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user, index) => (
+                      <tr key={user.id}>
+                        <td>{index + 1}</td>
+                        <td>{user.name}</td>
+                        <td>{user.email}</td>
+                        <td>
+                          <span
+                            className={`badge bg-${
+                              user.role === "admin"
+                                ? "danger"
+                                : user.role === "lecturer"
+                                ? "warning"
+                                : "success"
+                            }`}
+                          >
+                            {user.role}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="btn-group" role="group">
+                            <Button
+                              variant="warning"
+                              size="sm"
+                              onClick={() => openModal(user)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleDelete(user.uid)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </Card.Body>
+          </Card>
+
+          {/* Edit User Modal */}
           <Modal show={showModal} onHide={() => setShowModal(false)}>
             <Modal.Header closeButton>
               <Modal.Title>Edit User</Modal.Title>
@@ -194,7 +226,7 @@ const UserManagement = () => {
             </Modal.Footer>
           </Modal>
 
-          {/* Modal for Creating New User */}
+          {/* Create New User Modal */}
           <Modal
             show={showCreateModal}
             onHide={() => setShowCreateModal(false)}

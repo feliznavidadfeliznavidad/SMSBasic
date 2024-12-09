@@ -7,12 +7,13 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Dashboard from "./components/Dashboard";
-import Login from "./components/Login";
-import ClassManagement from "./components/ClassManagement";
-import UserManagement from "./components/UserManagement";
-import Unauthorized from "./components/Unauthorized";
-import ClassesLecture from "./components/ClassesLecture";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import ClassManagement from "./pages/ClassManagement";
+import UserManagement from "./pages/UserManagement";
+import Unauthorized from "./pages/Unauthorized";
+import ClassesLecture from "./pages/ClassesLecture";
+import ClassesStudent from "./pages/ClassesStudent";
 
 function App() {
   return (
@@ -56,6 +57,14 @@ function App() {
             }
           />
 
+          <Route
+            path="/classes_student"
+            element={
+              <ProtectedRoute>
+                <ClassesStudent />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

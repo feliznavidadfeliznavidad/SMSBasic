@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 
+// Server 1 - Student Management System
 // const firebaseConfig = {
 //   apiKey: "AIzaSyB9Q3NFiFvwfkYxdFQgGn7krpae2Usrk-A",
 //   authDomain: "login-cde1c.firebaseapp.com",
@@ -9,7 +10,7 @@ import { initializeApp } from "firebase/app";
 //   appId: "1:217566408039:web:8db9c9eccf27afa82b93c2",
 // };
 
-// Duy server
+// Duy server - NodeJSFirebaseAuth
 const firebaseConfig = {
   apiKey: "AIzaSyBZuYyfCiNnYTaHMau75q9XKucHh61zvA0",
   authDomain: "nodejsfirebaseauth-4952e.firebaseapp.com",
@@ -20,7 +21,7 @@ const firebaseConfig = {
   measurementId: "G-H3HBPZLVK1",
 };
 
-// Duy 2  Server
+// Duy server 2 - SMS Basic 
 // const firebaseConfig = {
 //   apiKey: "AIzaSyDycS0hjSak_qsL5ZPtAldBSTef5QkDRfQ",
 //   authDomain: "sms-basic.firebaseapp.com",

@@ -38,7 +38,7 @@
 1. **Khởi động Backend**:
    - Chuyển vào thư mục `backend` và chạy lệnh:
      ```bash
-     npm node server.js
+   node server.js
      ```
    - Đảm bảo backend đã khởi động trước khi chuyển sang frontend.
 

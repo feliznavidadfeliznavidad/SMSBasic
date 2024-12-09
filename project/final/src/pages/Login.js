@@ -19,13 +19,13 @@ const Login = () => {
       const role = await login(email, password);
       switch (role) {
         case "admin":
-          navigate("/");
+          navigate("/classes");
           break;
         case "lecturer":
-          navigate("/");
+          navigate("/classes_lecturer");
           break;
         case "student":
-          navigate("/");
+          navigate("/classes_student");
           break;
         default:
           navigate("/unauthorized");
@@ -44,17 +44,17 @@ const Login = () => {
       const role = await googleLogin(idToken);
       switch (role) {
         case "admin":
-          navigate("/");
-          break;
-        case "lecturer":
           navigate("/classes");
           break;
-        case "student":
-          navigate("/classes");
-          break;
-        default:
-          navigate("/unauthorized");
-          break;
+          case "lecturer":
+            navigate("/classes_lecturer");
+            break;
+          case "student":
+            navigate("/classes_student");
+            break;
+          default:
+            navigate("/unauthorized");
+            break;
       }
     } catch (error) {
       setError("Failed to log in with Google");

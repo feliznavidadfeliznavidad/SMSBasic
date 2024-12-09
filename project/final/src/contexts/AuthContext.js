@@ -12,7 +12,6 @@ export const AuthProvider = ({ children }) => {
 
   axios.interceptors.request.use(
     (config) => {
-      // Ưu tiên lấy token từ sessionStorage trước
       const token =
         sessionStorage.getItem("token") || localStorage.getItem("token");
       if (token) {
@@ -25,7 +24,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      // Kiểm tra token trong cả sessionStorage và localStorage
       const sessionToken = sessionStorage.getItem("token");
       const localToken = localStorage.getItem("token");
       const token = sessionToken || localToken;
@@ -51,7 +49,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post("/api/auth/login", { email, password });
       const { token, user } = response.data;
-      // Lưu token vào cả hai storage
       localStorage.setItem("token", token);
       sessionStorage.setItem("token", token);
       setUser(user);
@@ -67,7 +64,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post("/api/auth/register", userData);
       const { token, user } = response.data;
-      // Lưu token vào cả hai storage
       localStorage.setItem("token", token);
       sessionStorage.setItem("token", token);
       setUser(user);
@@ -83,7 +79,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post("/api/auth/google-login", { idToken });
       const { token, user } = response.data;
-      // Lưu token vào cả hai storage
       localStorage.setItem("token", token);
       sessionStorage.setItem("token", token);
       setUser(user);
@@ -101,7 +96,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Xóa token khỏi cả hai storage
       localStorage.removeItem("token");
       sessionStorage.removeItem("token");
       setUser(null);
