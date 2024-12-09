@@ -13,6 +13,7 @@ const ClassManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddClassModal, setIsAddClassModal] = useState(false);
   const [chosenClass, setChosenClass] = useState("");
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -21,10 +22,10 @@ const ClassManagement = () => {
     setIsModalOpen(false);
   };
   useEffect(() => {
-    fetchUsers();
+    fetchClasses();
   }, [jwtToken, clasess]);
 
-  const fetchUsers = () => {
+  const fetchClasses = () => {
     setLoading(true);
     axios
       .get("/api/classes", {
@@ -39,10 +40,12 @@ const ClassManagement = () => {
         setLoading(false);
       });
   };
+
   const handleSubmit = (data) => {
     createClass(data);
     console.log("Data submitted:", data);
   };
+  
   const createClass = (data) => {
     axios
       .post("api/classes", data, {

@@ -2,14 +2,12 @@ const { admin } = require('../config/firebaseAdmin');
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = 'hsuuniversity';
 
-// Middleware xác thực JWT
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   if (!authHeader) {
     return res.status(403).json({ message: 'No token provided' });
   }
 
-  // Kiểm tra và loại bỏ tiền tố 'Bearer '
   const token = authHeader.startsWith('Bearer ')
     ? authHeader.slice(7).trim()
     : authHeader;
@@ -20,7 +18,6 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-      // Lấy thông tin user từ Firestore
       const userDoc = await admin.firestore()
         .collection('Users')
         .doc(decoded.uid)
@@ -41,7 +38,6 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-// Middleware kiểm tra role
 const checkRole = (roles) => {
   return (req, res, next) => {
     if (!req.user) {

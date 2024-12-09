@@ -7,6 +7,39 @@ const { verifyToken } = require('../middleware/auth');
 const SECRET_KEY = process.env.JWT_SECRET || 'hsuuniversity';
 const TOKEN_EXPIRES_IN = '2h';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         uid:
+ *           type: string
+ *         email:
+ *           type: string
+ *         name:
+ *           type: string
+ *         role:
+ *           type: string
+ *           enum: [student, lecturer]
+ *         photo:
+ *           type: string
+ *     AuthResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *         token:
+ *           type: string
+ *         user:
+ *           $ref: '#/components/schemas/User'
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ */
+
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -19,6 +52,44 @@ const generateToken = (user) => {
   );
 };
 
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 minimum: 6
+ *               name:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [student, lecturer]
+ *                 default: student
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Invalid input or email already in use
+ */
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name, role = 'student' } = req.body;
@@ -66,6 +137,36 @@ router.post('/register', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Login with email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       401:
+ *         description: Authentication failed
+ */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -79,7 +180,6 @@ router.post('/login', async (req, res) => {
     }
 
     const userData = userDoc.data();
-
     if (!userData.active) {
       throw new Error('Account is disabled');
     }
@@ -121,42 +221,115 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/**
+* @swagger
+* /api/auth/google-login:
+*   post:
+*     tags: [Auth]
+*     summary: Login or register with Google
+*     description: Logs in with Google account. If account doesn't exist, creates new student account
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             required:
+*               - idToken
+*             properties:
+*               idToken:
+*                 type: string
+*     responses:
+*       200:
+*         description: Login or registration successful
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*                   example: Account created and logged in successfully
+*                 token:
+*                   type: string
+*                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+*                 user:
+*                   type: object
+*                   properties:
+*                     uid:
+*                       type: string
+*                     email:
+*                       type: string
+*                     name:
+*                       type: string  
+*                     role:
+*                       type: string
+*                       enum: [student]
+*                     photo:
+*                       type: string
+*                       nullable: true
+*       400:
+*         description: Error during login/registration process
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*/
 router.post('/google-login', async (req, res) => {
   try {
     const { idToken } = req.body;
-
     const decodedToken = await auth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
-    const userDoc = await admin.firestore()
+    const { email, name, picture } = decodedToken;
+ 
+    let userDoc = await admin.firestore()
       .collection('Users')
       .doc(uid)
       .get();
-
+ 
+    let userData;
+    
     if (!userDoc.exists) {
-      return res.status(404).json({
-        message: 'The account is not registered in the system. Please contact the administrator.',
+      const newUser = {
+        uid,
+        email,
+        name: name || email.split('@')[0],
+        role: 'student',
+        photo: picture || null,
+        active: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastLogin: admin.firestore.FieldValue.serverTimestamp()
+      };
+ 
+      await admin.firestore()
+        .collection('Users')
+        .doc(uid)
+        .set(newUser);
+ 
+      userData = newUser;
+    } else {
+      userData = userDoc.data();
+      
+      await userDoc.ref.update({
+        lastLogin: admin.firestore.FieldValue.serverTimestamp(),
       });
+ 
+      if (!userData.active) {
+        throw new Error('The account has been disabled');
+      }
     }
-
-    const userData = userDoc.data();
-
-    await userDoc.ref.update({
-      lastLogin: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    if (!userData.active) {
-      throw new Error('The account has been disabled');
-    }
-
+ 
     const token = generateToken({
       uid,
       email: userData.email,
       role: userData.role,
     });
-
+ 
     res.status(200).json({
-      message: 'Google login successful',
+      message: userDoc.exists ? 'Google login successful' : 'Account created and logged in successfully',
       token,
       user: {
         uid,
@@ -169,8 +342,29 @@ router.post('/google-login', async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-});
+ });
 
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Get user profile
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ */
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const userDoc = await admin.firestore()
@@ -196,7 +390,29 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Request password reset
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset email sent successfully
+ *       400:
+ *         description: Failed to initiate password reset
+ */
 router.post('/reset-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -214,6 +430,20 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Logout user
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       500:
+ *         description: Server error
+ */
 router.post('/logout', verifyToken, async (req, res) => {
   try {
     res.status(200).json({ message: 'Logged out successfully' });

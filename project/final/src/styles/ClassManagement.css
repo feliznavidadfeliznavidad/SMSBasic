@@ -9,8 +9,8 @@
 .sidebar-container {
   width: 250px;
   background-color: #1e272e;
-  color: #ffffff;
-  font-family: "Arial", sans-serif;
+  /* color: #ffffff; */
+  /* font-family: "Arial", sans-serif; */
   padding: 20px;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
