@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.setItem("jwt", token);
       setUser(user);
       setError(null);
-      return true;
+      return user.role;
     } catch (error) {
       setError(error.response?.data?.message || "Login failed");
       throw error;
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token);
       setUser(user);
       setError(null);
-      return true;
+      return user.role;
     } catch (error) {
       setError(error.response?.data?.message || "Google login failed");
       throw error;

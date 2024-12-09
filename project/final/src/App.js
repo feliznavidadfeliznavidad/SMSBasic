@@ -11,7 +11,8 @@ import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import ClassManagement from "./components/ClassManagement";
 import UserManagement from "./components/UserManagement";
-import Test from "./components/Test";
+import Unauthorized from './components/Unauthorized';
+
 function App() {
   return (
     <Router>
@@ -47,17 +48,10 @@ function App() {
           />
 
           <Route
-            path="/attendance"
+            path="/unauthorized" 
             element={
-              <ProtectedRoute>{/* <AttendanceManagement /> */}</ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/grades"
-            element={
-              <ProtectedRoute>{/* <GradeManagement /> */}</ProtectedRoute>
-            }
+              <Unauthorized />
+            } 
           />
 
           <Route path="*" element={<Navigate to="/" replace />} />

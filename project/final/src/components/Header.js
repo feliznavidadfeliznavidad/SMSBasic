@@ -7,35 +7,28 @@ import { useNavigate } from 'react-router-dom';
 export const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  // State để mở/đóng modal
   const [showModal, setShowModal] = useState(false);
 
-  // Hàm mở modal
   const handleProfileClick = () => {
     setShowModal(true);
   };
 
-  // Hàm đóng modal
   const handleCloseModal = () => {
     setShowModal(false);
   };
 
-  // Hàm đăng xuất
   const handleLogout = () => {
     logout(); 
     navigate('/'); 
   };
 
-  // Chuyển đổi thời gian UNIX sang định dạng ngày tháng
   const formatDate = (seconds) => {
-    if (!seconds) return ''; // Kiểm tra nếu không có giá trị
+    if (!seconds) return ''; 
     const date = new Date(seconds * 1000);
-    return date.toLocaleString(); // Chuyển đổi thành định dạng ngày tháng giờ
+    return date.toLocaleString(); 
   };
-
   if (!user) {
-    return null; // Nếu chưa có user thì không render Header
+    return null; 
   }
 
   return (
@@ -51,7 +44,6 @@ export const Header = () => {
               </Dropdown.Toggle>
               <Dropdown.Menu align="end">
                 <Dropdown.Item onClick={handleProfileClick}>Profile</Dropdown.Item>
-                {/* <Dropdown.Item>Settings</Dropdown.Item> */}
                 <Dropdown.Divider />
                 <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
               </Dropdown.Menu>
@@ -60,7 +52,6 @@ export const Header = () => {
         </Container>
       </Navbar>
 
-      {/* Modal Profile */}
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Profile Information</Modal.Title>
@@ -68,7 +59,7 @@ export const Header = () => {
         <Modal.Body>
           <Row>
             <Col md={4} className="text-center">
-              {/* Hiển thị ảnh đại diện, nếu không có ảnh sẽ hiển thị một icon mặc định */}
+
               <div className="mb-3">
                 {user?.photo ? (
                   <img

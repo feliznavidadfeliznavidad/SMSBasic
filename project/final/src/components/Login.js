@@ -16,8 +16,21 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      navigate('/');
+      const role = await login(email, password);
+      switch (role) {
+        case "admin":
+          navigate("/");
+          break;
+        case "lecturer":
+          navigate("/classes");
+          break;
+        case "student":
+          navigate("/classes");
+          break;
+        default:
+          navigate("/unauthorized");
+          break;
+      }
     } catch (error) {
       setError('Failed to log in');
     }
@@ -28,8 +41,21 @@ const Login = () => {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
-      await googleLogin(idToken);
-      navigate('/');
+      const role = await googleLogin(idToken);
+      switch (role) {
+        case "admin":
+          navigate("/");
+          break;
+        case "lecturer":
+          navigate("/classes");
+          break;
+        case "student":
+          navigate("/classes");
+          break;
+        default:
+          navigate("/unauthorized");
+          break;
+      }
     } catch (error) {
       setError('Failed to log in with Google');
     }
