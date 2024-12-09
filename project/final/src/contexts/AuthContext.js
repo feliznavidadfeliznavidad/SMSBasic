@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useState, useContext, useEffect } from "react";
+import axios from "axios";
 
 const AuthContext = createContext(null);
 
@@ -8,11 +8,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  axios.defaults.baseURL = 'http://localhost:8888';
+  axios.defaults.baseURL = "http://localhost:8888";
 
   axios.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -23,14 +23,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
         try {
-          const response = await axios.get('/api/auth/profile');
+          const response = await axios.get("/api/auth/profile");
           setUser(response.data.user);
         } catch (error) {
-          localStorage.removeItem('token');
-          setError('Session expired. Please login again.');
+          localStorage.removeItem("token");
+          setError("Session expired. Please login again.");
         }
       }
       setLoading(false);
@@ -41,53 +41,54 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await axios.post("/api/auth/login", { email, password });
       const { token, user } = response.data;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("jwt", token);
       setUser(user);
       setError(null);
       return true;
     } catch (error) {
-      setError(error.response?.data?.message || 'Login failed');
+      setError(error.response?.data?.message || "Login failed");
       throw error;
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await axios.post("/api/auth/register", userData);
       const { token, user } = response.data;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
       setUser(user);
       setError(null);
       return true;
     } catch (error) {
-      setError(error.response?.data?.message || 'Registration failed');
+      setError(error.response?.data?.message || "Registration failed");
       throw error;
     }
   };
 
   const googleLogin = async (idToken) => {
     try {
-      const response = await axios.post('/api/auth/google-login', { idToken });
+      const response = await axios.post("/api/auth/google-login", { idToken });
       const { token, user } = response.data;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
       setUser(user);
       setError(null);
       return true;
     } catch (error) {
-      setError(error.response?.data?.message || 'Google login failed');
+      setError(error.response?.data?.message || "Google login failed");
       throw error;
     }
   };
 
   const logout = async () => {
     try {
-      await axios.post('/api/auth/logout');
+      await axios.post("/api/auth/logout");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       setUser(null);
       setError(null);
     }
@@ -99,17 +100,17 @@ export const AuthProvider = ({ children }) => {
       setUser({ ...user, ...updates });
       return response.data;
     } catch (error) {
-      setError(error.response?.data?.message || 'Profile update failed');
+      setError(error.response?.data?.message || "Profile update failed");
       throw error;
     }
   };
 
   const resetPassword = async (email) => {
     try {
-      await axios.post('/api/auth/reset-password', { email });
+      await axios.post("/api/auth/reset-password", { email });
       setError(null);
     } catch (error) {
-      setError(error.response?.data?.message || 'Password reset failed');
+      setError(error.response?.data?.message || "Password reset failed");
       throw error;
     }
   };
@@ -124,7 +125,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     resetPassword,
-    setError
+    setError,
   };
 
   return (
@@ -137,7 +138,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

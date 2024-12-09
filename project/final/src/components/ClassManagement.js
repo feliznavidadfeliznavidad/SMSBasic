@@ -13,7 +13,6 @@ const ClassManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddClassModal, setIsAddClassModal] = useState(false);
   const [chosenClass, setChosenClass] = useState("");
-
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -45,7 +44,7 @@ const ClassManagement = () => {
     createClass(data);
     console.log("Data submitted:", data);
   };
-  
+
   const createClass = (data) => {
     axios
       .post("api/classes", data, {

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
-import { Table, Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
+import { Table, Button, Modal, Form, Alert, Spinner } from "react-bootstrap";
 
-import { Sidebar } from '../components/Sidebar';
-import { Header } from '../components/Header';
+import { Sidebar } from "../components/Sidebar";
+import { Header } from "../components/Header";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -13,7 +13,12 @@ const UserManagement = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'student' });
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "student",
+  });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { currentUser, jwtToken } = useAuth();
 
@@ -24,7 +29,7 @@ const UserManagement = () => {
   const fetchUsers = () => {
     setLoading(true);
     axios
-      .get('/api/users', {
+      .get("/api/users", {
         headers: { Authorization: `Bearer ${jwtToken}` },
       })
       .then((response) => {
@@ -60,7 +65,7 @@ const UserManagement = () => {
 
   const handleCreateUser = () => {
     axios
-      .post('/api/auth/register', newUser, {
+      .post("/api/auth/register", newUser, {
         headers: { Authorization: `Bearer ${jwtToken}` },
       })
       .then(() => {
@@ -145,23 +150,29 @@ const UserManagement = () => {
                   <Form.Label>Name</Form.Label>
                   <Form.Control
                     type="text"
-                    value={editUser?.name || ''}
-                    onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
+                    value={editUser?.name || ""}
+                    onChange={(e) =>
+                      setEditUser({ ...editUser, name: e.target.value })
+                    }
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
-                    value={editUser?.email || ''}
-                    onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
+                    value={editUser?.email || ""}
+                    onChange={(e) =>
+                      setEditUser({ ...editUser, email: e.target.value })
+                    }
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label>Role</Form.Label>
                   <Form.Select
-                    value={editUser?.role || ''}
-                    onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+                    value={editUser?.role || ""}
+                    onChange={(e) =>
+                      setEditUser({ ...editUser, role: e.target.value })
+                    }
                   >
                     <option value="student">Student</option>
                     <option value="lecturer">Lecturer</option>
@@ -174,14 +185,20 @@ const UserManagement = () => {
               <Button variant="secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={() => handleSave(editUser?.uid)}>
+              <Button
+                variant="primary"
+                onClick={() => handleSave(editUser?.uid)}
+              >
                 Save Changes
               </Button>
             </Modal.Footer>
           </Modal>
 
           {/* Modal for Creating New User */}
-          <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
+          <Modal
+            show={showCreateModal}
+            onHide={() => setShowCreateModal(false)}
+          >
             <Modal.Header closeButton>
               <Modal.Title>Create New User</Modal.Title>
             </Modal.Header>
@@ -192,7 +209,9 @@ const UserManagement = () => {
                   <Form.Control
                     type="text"
                     value={newUser.name}
-                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, name: e.target.value })
+                    }
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
@@ -200,7 +219,9 @@ const UserManagement = () => {
                   <Form.Control
                     type="email"
                     value={newUser.email}
-                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
@@ -208,14 +229,18 @@ const UserManagement = () => {
                   <Form.Control
                     type="password"
                     value={newUser.password}
-                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, password: e.target.value })
+                    }
                   />
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label>Role</Form.Label>
                   <Form.Select
                     value={newUser.role}
-                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, role: e.target.value })
+                    }
                   >
                     <option value="student">Student</option>
                     <option value="lecturer">Lecturer</option>
@@ -225,7 +250,10 @@ const UserManagement = () => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowCreateModal(false)}
+              >
                 Cancel
               </Button>
               <Button variant="primary" onClick={handleCreateUser}>

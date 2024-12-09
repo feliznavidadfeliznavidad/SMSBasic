@@ -1,42 +1,87 @@
+// ListStudentModal.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import "../styles/ListStudentModal.css";
 import axios from "axios";
-import { useAuth } from "../contexts/AuthContext";
 
-const ListStudentModal = ({ isOpen, onClose, classId }) => {
+// ListStudentModal.css
+import "../styles/ListStudentModal.css";
+
+const ListStudentModal = ({ isOpen, onClose, classId, jwtToken }) => {
   const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState("");
+  const [allStudents, setAllStudents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { jwtToken } = useAuth();
 
-  const fetchStudents = useCallback(
-    (classId) => {
-      console.log(`/api/classes/${classId}/students`);
+  const fetchStudentsInClass = useCallback(async () => {
+    if (!isOpen || !classId) return;
 
-      if (!isOpen) return;
-      setLoading(true);
-      axios
-        .get(`/api/classes/${classId}/students`, {
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        })
-        .then((response) => {
-          setStudents(response.data.students || []); // Adjust based on API response structure
-          setLoading(false);
-        })
+    setLoading(true);
+    try {
+      const response = await axios.get(`/api/classes/${classId}/students`, {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      });
+      setStudents(response.data.students || []);
+    } catch (err) {
+      console.error("Error fetching class students:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [isOpen, classId, jwtToken]);
 
-        .catch((err) => {
-          console.error(err);
-          setLoading(false);
-        });
-    },
-    [isOpen, jwtToken]
-  );
+  const fetchStudents = async () => {
+    try {
+      const response = await axios.get(`/api/users/students`);
+      setAllStudents(response.data || []);
+    } catch (err) {
+      console.error("Error fetching all students:", err);
+    }
+  };
+
+  const addStudent = async (data) => {
+    try {
+      await axios.post(`api/classes/${classId}/students`, data, {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      });
+      // Refresh the students list after adding
+      await fetchStudentsInClass();
+      // Reset selection
+      setSelectedStudent("");
+    } catch (err) {
+      console.error("Error adding student:", err.response?.data || err.message);
+    }
+  };
+
+  const handleAdd = () => {
+    const selectedStudentDetails = allStudents.find(
+      (stu) => stu.id === selectedStudent
+    );
+
+    if (!selectedStudentDetails) {
+      console.log("No student selected!");
+      return;
+    }
+
+    addStudent({
+      studentId: selectedStudentDetails.id,
+      studentName: selectedStudentDetails.name,
+    });
+  };
+
+  const handleDelete = async (classId, studentId) => {
+    try {
+      await axios.delete(`/api/classes/${classId}/students/${studentId}`, {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      });
+      // Refresh the students list after deletion
+      await fetchStudentsInClass();
+    } catch (err) {
+      console.error("Error deleting student:", err);
+    }
+  };
 
   useEffect(() => {
-    fetchStudents(classId);
-  }, [fetchStudents]);
-  useEffect(() => {
-    console.log(typeof students);
-  }, [students]);
+    fetchStudentsInClass();
+    fetchStudents();
+  }, [classId, fetchStudentsInClass]);
 
   if (!isOpen) return null;
 
@@ -44,6 +89,28 @@ const ListStudentModal = ({ isOpen, onClose, classId }) => {
     <div className="modal-overlay">
       <div className="modal-container">
         <h4>List of Students</h4>
+        <div className="add-student-row">
+          <select
+            className="dropdown-box"
+            onChange={(e) => setSelectedStudent(e.target.value)}
+            value={selectedStudent}
+          >
+            <option value="">Select Student</option>
+            {allStudents.map((stu) => (
+              <option key={stu.id} value={stu.id}>
+                {stu.name}
+              </option>
+            ))}
+          </select>
+          <button
+            className="add-btn"
+            onClick={handleAdd}
+            disabled={!selectedStudent}
+          >
+            Add
+          </button>
+        </div>
+
         {loading ? (
           <p>Loading...</p>
         ) : (
@@ -63,7 +130,7 @@ const ListStudentModal = ({ isOpen, onClose, classId }) => {
                   <td>
                     <button
                       className="delete-btn"
-                      //   onClick={() => handleDeleteStudent(student.studentId)}
+                      onClick={() => handleDelete(classId, student.studentId)}
                     >
                       Delete
                     </button>
