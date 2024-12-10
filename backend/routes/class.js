@@ -21,7 +21,6 @@ const { verifyToken, checkRole } = require("../middleware/auth");
  *           description: Student's name
  */
 
-
 const validateStudent = (req, res, next) => {
   const { studentId, studentName } = req.body;
   if (!studentId || !studentName || studentName.trim().length < 2) {
@@ -110,19 +109,19 @@ const validateStudent = (req, res, next) => {
 
 const validateClass = (req, res, next) => {
   const { className, lecturerId, lecturerName } = req.body;
-  
+
   if (!className || className.trim().length < 3) {
     return res
       .status(400)
       .json({ message: "Class name must be at least 3 characters long" });
   }
-  
+
   if (!lecturerId || !lecturerName || lecturerName.trim().length < 2) {
     return res
       .status(400)
       .json({ message: "Valid lecturer ID and name are required" });
   }
-  
+
   next();
 };
 
@@ -139,9 +138,9 @@ router.post(
       const lecturerRef = admin.firestore().collection("Users").doc(lecturerId);
       const lecturerDoc = await lecturerRef.get();
 
-      if (!lecturerDoc.exists || lecturerDoc.data().role !== 'lecturer') {
-        return res.status(400).json({ 
-          message: "Invalid lecturer ID or user is not a lecturer" 
+      if (!lecturerDoc.exists || lecturerDoc.data().role !== "lecturer") {
+        return res.status(400).json({
+          message: "Invalid lecturer ID or user is not a lecturer",
         });
       }
 
@@ -154,7 +153,7 @@ router.post(
         studentsCount: 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        createdBy: req.user.uid,  // Track who created the class
+        createdBy: req.user.uid, // Track who created the class
       });
 
       res.status(201).json({
@@ -163,9 +162,9 @@ router.post(
       });
     } catch (error) {
       console.error("Error creating class:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: "Failed to create class",
-        error: error.message 
+        error: error.message,
       });
     }
   }
@@ -218,7 +217,7 @@ router.get("/", verifyToken, async (req, res) => {
  * @swagger
  * /api/classes/{classId}:
  *   put:
- *     summary: Update a class
+ *     summary: Update a class's information
  *     tags: [Classes]
  *     security:
  *       - bearerAuth: []
@@ -228,21 +227,56 @@ router.get("/", verifyToken, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID of the class to update
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Class'
+ *             type: object
+ *             required:
+ *               - className
+ *               - lecturerId
+ *               - lecturerName
+ *             properties:
+ *               className:
+ *                 type: string
+ *                 description: New name for the class
+ *                 minimum: 3
+ *               lecturerId:
+ *                 type: string
+ *                 description: ID of the new lecturer
+ *               lecturerName:
+ *                 type: string
+ *                 description: Name of the new lecturer
  *     responses:
  *       200:
  *         description: Class updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Class updated successfully
+ *                 classId:
+ *                   type: string
+ *                   description: ID of the updated class
  *       400:
- *         description: Invalid input
+ *         description: Invalid input (class name too short or invalid lecturer)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Class name must be at least 3 characters long
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Missing or invalid token
  *       403:
- *         description: Forbidden - User does not have required role
+ *         description: Forbidden - User does not have required role or permissions
  *       404:
  *         description: Class not found
  *       500:
@@ -256,13 +290,22 @@ router.put(
   async (req, res) => {
     try {
       const { classId } = req.params;
-      const updateData = req.body;
+      const { className, lecturerId, lecturerName } = req.body;
 
       const classRef = admin.firestore().collection("Classes").doc(classId);
       const doc = await classRef.get();
 
       if (!doc.exists) {
         return res.status(404).json({ message: "Class not found" });
+      }
+
+      const lecturerRef = admin.firestore().collection("Users").doc(lecturerId);
+      const lecturerDoc = await lecturerRef.get();
+
+      if (!lecturerDoc.exists || lecturerDoc.data().role !== "lecturer") {
+        return res.status(400).json({
+          message: "Invalid lecturer ID or user is not a lecturer",
+        });
       }
 
       if (
@@ -272,12 +315,25 @@ router.put(
         return res.status(403).json({ message: "Permission denied" });
       }
 
-      updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+      const updateData = {
+        className,
+        lecturerId,
+        lecturerName,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
       await classRef.update(updateData);
 
-      res.status(200).json({ message: "Class updated successfully" });
+      res.status(200).json({
+        message: "Class updated successfully",
+        classId: classId,
+      });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      console.error("Error updating class:", error);
+      res.status(500).json({
+        message: "Failed to update class",
+        error: error.message,
+      });
     }
   }
 );
@@ -553,14 +609,14 @@ router.delete(
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Lecturer only 
+ *         description: Forbidden - Lecturer only
  *       500:
  *         description: Server error
  */
 router.get(
   "/teaching",
   verifyToken,
-  checkRole(["lecturer"]), 
+  checkRole(["lecturer"]),
   async (req, res) => {
     try {
       const classesRef = admin
@@ -607,7 +663,7 @@ router.get(
  *         description: Server error
  */
 router.get(
-  "/enrolled", 
+  "/enrolled",
   verifyToken,
   checkRole(["student"]),
   async (req, res) => {
@@ -619,17 +675,14 @@ router.get(
       const classesSnapshot = await classesRef.get();
 
       for (const classDoc of classesSnapshot.docs) {
-        const studentRef = classDoc
-          .ref
-          .collection("Students")
-          .doc(studentId);
-        
+        const studentRef = classDoc.ref.collection("Students").doc(studentId);
+
         const studentDoc = await studentRef.get();
-        
+
         if (studentDoc.exists) {
           enrolledClasses.push({
             id: classDoc.id,
-            ...classDoc.data()
+            ...classDoc.data(),
           });
         }
       }

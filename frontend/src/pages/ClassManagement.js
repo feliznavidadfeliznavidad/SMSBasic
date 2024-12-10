@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import ListStudentModal from "../components/Modal_ShowListStudent_Admin";
 import AddClassModal from "../components/Modal_CreateNewClass";
 import axios from "axios";
+import EditClassModal from "../components/Modal_UpdateClass";
 import { Table, Button, Spinner, Container, Alert } from "react-bootstrap";
 
 const ClassManagement = () => {
@@ -15,6 +16,9 @@ const ClassManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddClassModal, setIsAddClassModal] = useState(false);
   const [chosenClass, setChosenClass] = useState(null);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedClass, setSelectedClass] = useState(null);
 
   const fetchClasses = () => {
     setLoading(true);
@@ -39,6 +43,11 @@ const ClassManagement = () => {
       })
       .then(() => fetchClasses())
       .catch((err) => setError("Failed to delete class."));
+  };
+  const handleUpdate = (classID) => {
+    const classToEdit = classes.find((c) => c.id === classID);
+    setSelectedClass(classToEdit);
+    setShowEditModal(true);
   };
 
   useEffect(() => {
@@ -99,6 +108,14 @@ const ClassManagement = () => {
                       >
                         Delete
                       </Button>
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        className="ms-2"
+                        onClick={() => handleUpdate(cls.id)}
+                      >
+                        Edit
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -106,8 +123,17 @@ const ClassManagement = () => {
             </Table>
           )}
         </Container>
-
-        {/* List Student Modal */}
+        {/* Edit Class Modal */}
+        <EditClassModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedClass(null);
+            fetchClasses(); // Refresh the class list after edit
+          }}
+          classData={selectedClass}
+        />
+        {/* List Class Modal */}
         <ListStudentModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -117,7 +143,10 @@ const ClassManagement = () => {
         {/* Add Class Modal */}
         <AddClassModal
           isOpen={isAddClassModal}
-          onClose={() => setIsAddClassModal(false)}
+          onClose={() => {
+            setIsAddClassModal(false);
+            fetchClasses();
+          }}
         />
       </div>
     </div>

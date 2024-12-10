@@ -3,12 +3,14 @@ import { Sidebar } from "../components/Sidebar";
 import { Header } from "../components/Header";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
+import ListStudentModal from "../components/Modal_ShowListStudent_Lecturer";
 import "../styles/ClassesLecturer.css";
 const ClassesLecture = () => {
   const [classes, setClasses] = useState([]);
   const { currentUser, jwtToken } = useAuth();
   const [loading, setLoading] = useState(false);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chosenClass, setChosenClass] = useState(null);
   const fetchClasses = () => {
     setLoading(true);
     axios
@@ -49,16 +51,17 @@ const ClassesLecture = () => {
           {classes.length > 0 ? (
             <div className="class-list">
               {classes.map((classItem) => (
-                <div key={classItem.id} className="class-card">
+                <div
+                  key={classItem.id}
+                  className="class-card"
+                  onClick={() => {
+                    setChosenClass(classItem.id);
+                    setIsModalOpen(true);
+                  }}
+                >
                   <h2>{classItem.className}</h2>
                   <p>
                     <strong>Lecturer:</strong> {classItem.lecturerName}
-                  </p>
-                  <p>
-                    <strong>Students:</strong> {classItem.studentsCount}
-                  </p>
-                  <p>
-                    <strong>Created By:</strong> {classItem.createdBy}
                   </p>
                   <p>
                     <strong>Created At:</strong>{" "}
@@ -74,6 +77,12 @@ const ClassesLecture = () => {
           )}
         </div>
       </div>
+      {/* List Student Modal */}
+      <ListStudentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        classId={chosenClass}
+      />
     </div>
   );
 };

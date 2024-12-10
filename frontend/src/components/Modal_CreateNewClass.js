@@ -65,27 +65,26 @@ const AddClassModal = ({ isOpen, onClose }) => {
       fetch("http://localhost:8888/api/classes", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
           Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
-        body: JSON.stringify(classData), 
+        body: JSON.stringify(classData),
       })
         .then((res) => {
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
           }
-          return res.json(); 
+          return res.json();
         })
         .then((data) => {
           console.log("Response from server:", data);
-          console.log("Data sent:", classData); 
+          console.log("Data sent:", classData);
+          onClose();
         })
         .catch((err) => console.error("Error:", err.message));
       setSubject("");
       setLecturerName("");
       setError("");
-
-      onClose();
     } catch (err) {
       setError("Failed to create class");
       console.error("Error creating class:", err);

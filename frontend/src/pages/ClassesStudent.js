@@ -27,9 +27,6 @@ const ClassesLecture = () => {
   useEffect(() => {
     fetchClasses();
   }, []);
-  useEffect(() => {
-    console.log("alo: ", classes);
-  }, [classes]);
 
   return (
     <div className="class-management-container">
@@ -53,12 +50,6 @@ const ClassesLecture = () => {
                   <h2>{classItem.className}</h2>
                   <p>
                     <strong>Lecturer:</strong> {classItem.lecturerName}
-                  </p>
-                  <p>
-                    <strong>Students:</strong> {classItem.studentsCount}
-                  </p>
-                  <p>
-                    <strong>Created By:</strong> {classItem.createdBy}
                   </p>
                   <p>
                     <strong>Created At:</strong>{" "}
